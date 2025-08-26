@@ -62,13 +62,13 @@ Schedules process_document(job_id, file_path).
 
 Step 3: Processing
 
-Page count + text density via PyMuPDF (fitz).
+Detects page count + text density via PyMuPDF (fitz).
 
-If scanned: flag OCR route.
+If scanned: flag OCR route (Gemini / optional Tesseract).
 
-LLM Router decides:
+LLM Router logic:
 
-Claude → docs >10 pages (large context)
+Claude → docs > 10 pages (large context)
 
 GPT-4 → financial tables (accurate extraction)
 
@@ -76,35 +76,38 @@ Gemini → scanned PDFs (multimodal OCR)
 
 Stub → fallback for dev
 
-Emits: "In-Progress" → "Validating"
+Emits: "In-Progress" → "Validating".
 
 Step 4: Validation & Save
 
-Result JSON includes:
+Builds result JSON:
 
 pages, is_scanned, llm_provider/model
 
 tables, table_count, table_titles
 
-Updates job status to "Completed" (or "Failed").
+Updates job status → "Completed" (or "Failed").
 
 Step 5: Realtime + Polling
 
 Frontend listens for job_update via Socket.IO.
 
-Also polls /status/{job_id} every 5s (React Query).
+Also polls /status/{job_id} every 5s using React Query.
 
 Step 6: Visualization + Export
 
-Queue UI shows live job list with status chips.
+Queue UI shows live jobs with status chips.
 
 Actions on completion:
 
-View Output (dialog with extracted tables)
+View Output: dialog with extracted tables
 
-Download JSON result
+Download: save JSON result
 
-Delete job (UI-only)
+Delete: remove job (UI-only)
+
+
+
 
 ---
 
