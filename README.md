@@ -1,6 +1,4 @@
-# Fexo – Document Ingestion, Processing, Extraction, and Output
-**
-Full-Stack Document Processing Application**
+# Fexo – Full-Stack Document Processing Application
 
 (Upload → Ingestion → Processing → Extraction → Output)
 
