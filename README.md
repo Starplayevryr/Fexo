@@ -139,7 +139,7 @@ Notes:
 
 ```bash
 # from backend/
-uvicorn app.main:app_sio --reload
+uvicorn main:app_sio --reload
 ```
 
 ### API
