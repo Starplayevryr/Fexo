@@ -276,6 +276,32 @@ Configure backend URL if needed:
   - The app also polls with React Query every 5s; ensure GET `/status/{job_id}` is reachable.
 
 ---
+Error Handling & Resilience
+Backend
+
+Rejects non-PDFs (400) at /upload.
+
+Missing file: /process returns 404.
+
+Missing job: /status/{job_id} returns 404.
+
+process_document wrapped in try/except → marks "Failed" and emits update.
+
+LlamaParse robustness: fresh instance per request; stub fallback.
+
+Frontend
+
+Upload/process wrapped in React Query mutation → onError shows Snackbar.
+
+Polling every 5s, retries safely; network errors don’t break UI.
+
+Socket.IO fallback to polling.
+
+Actions (View/Download) guarded until "Completed".
+
+Delete removes from UI list without backend dependency.
+
+Errors logged but UI stays functional.
 
 ## Assignment Checklist
 
