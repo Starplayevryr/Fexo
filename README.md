@@ -46,68 +46,38 @@ Frontend: React + Material-UI dashboard with drag-and-drop upload, live job moni
 
 ![Pipeline Diagram](./pipeline.png)
 
-Step 1: Upload
+# Step 1: Upload
 
-Frontend: react-dropzone posts to /upload.
+-Frontend: react-dropzone posts to /upload.
+-Backend: saves <file_id>.pdf, returns file_id.
+-Immediately calls /process to create job.
 
-Backend: saves <file_id>.pdf, returns file_id.
+# Step 2: Job Initialize
+-Backend creates jobs[job_id] = {status: "In-Progress", result: null}.
+-Schedules process_document(job_id, file_path).
 
-Immediately calls /process to create job.
+# Step 3: Processing
+-Detects page count + text density via PyMuPDF (fitz).
+-If scanned: flag OCR route (Gemini / optional Tesseract).
+-LLM Router 
+-Emits: "In-Progress" → "Validating".
 
-Step 2: Job Initialize
+# Step 4: Validation & Save
+-Builds result JSON:
+-pages, is_scanned, llm_provider/model
+-tables, table_count, table_titles
+-Updates job status → "Completed" (or "Failed").
 
-Backend creates jobs[job_id] = {status: "In-Progress", result: null}.
+# Step 5: Realtime + Polling
+-Frontend listens for job_update via Socket.IO.
+-Also polls /status/{job_id} every 5s using React Query.
 
-Schedules process_document(job_id, file_path).
-
-Step 3: Processing
-
-Detects page count + text density via PyMuPDF (fitz).
-
-If scanned: flag OCR route (Gemini / optional Tesseract).
-
-LLM Router logic:
-
-Claude → docs > 10 pages (large context)
-
-GPT-4 → financial tables (accurate extraction)
-
-Gemini → scanned PDFs (multimodal OCR)
-
-Stub → fallback for dev
-
-Emits: "In-Progress" → "Validating".
-
-Step 4: Validation & Save
-
-Builds result JSON:
-
-pages, is_scanned, llm_provider/model
-
-tables, table_count, table_titles
-
-Updates job status → "Completed" (or "Failed").
-
-Step 5: Realtime + Polling
-
-Frontend listens for job_update via Socket.IO.
-
-Also polls /status/{job_id} every 5s using React Query.
-
-Step 6: Visualization + Export
-
-Queue UI shows live jobs with status chips.
-
-Actions on completion:
-
-View Output: dialog with extracted tables
-
-Download: save JSON result
-
-Delete: remove job (UI-only)
-
-
-
+# Step 6: Visualization + Export
+-Queue UI shows live jobs with status chips.
+-Actions on completion:
+-View Output: dialog with extracted tables
+-Download: save JSON result
+-Delete: remove job (UI-only)
 
 ---
 
@@ -276,32 +246,23 @@ Configure backend URL if needed:
   - The app also polls with React Query every 5s; ensure GET `/status/{job_id}` is reachable.
 
 ---
-Error Handling & Resilience
-Backend
 
-Rejects non-PDFs (400) at /upload.
+## Error Handling & Resilience
 
-Missing file: /process returns 404.
+# Backend
+-Rejects non-PDFs (400) at /upload.
+-Missing file: /process returns 404.
+-Missing job: /status/{job_id} returns 404.
+-process_document wrapped in try/except → marks "Failed" and emits update.
+-LlamaParse robustness: fresh instance per request; stub fallback.
 
-Missing job: /status/{job_id} returns 404.
-
-process_document wrapped in try/except → marks "Failed" and emits update.
-
-LlamaParse robustness: fresh instance per request; stub fallback.
-
-Frontend
-
-Upload/process wrapped in React Query mutation → onError shows Snackbar.
-
-Polling every 5s, retries safely; network errors don’t break UI.
-
-Socket.IO fallback to polling.
-
-Actions (View/Download) guarded until "Completed".
-
-Delete removes from UI list without backend dependency.
-
-Errors logged but UI stays functional.
+#Frontend
+-Upload/process wrapped in React Query mutation → onError shows Snackbar.
+-Polling every 5s, retries safely; network errors don’t break UI.
+-Socket.IO fallback to polling.
+-Actions (View/Download) guarded until "Completed".
+-Delete removes from UI list without backend dependency.
+-Errors logged but UI stays functional.
 
 ## Assignment Checklist
 
