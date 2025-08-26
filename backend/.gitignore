@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual env
+venv/
+.venv/
+
+# Uploads
+uploads/
+
+# Configs
+.env
+
+# System
+.DS_Store
