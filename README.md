@@ -46,33 +46,33 @@ Frontend: React + Material-UI dashboard with drag-and-drop upload, live job moni
 
 ![Pipeline Diagram](./pipeline.png)
 
-# Step 1: Upload
+#### Step 1: Upload
 
 -Frontend: react-dropzone posts to /upload.
 -Backend: saves <file_id>.pdf, returns file_id.
 -Immediately calls /process to create job.
 
-# Step 2: Job Initialize
+#### Step 2: Job Initialize
 -Backend creates jobs[job_id] = {status: "In-Progress", result: null}.
 -Schedules process_document(job_id, file_path).
 
-# Step 3: Processing
+#### Step 3: Processing
 -Detects page count + text density via PyMuPDF (fitz).
 -If scanned: flag OCR route (Gemini / optional Tesseract).
 -LLM Router 
 -Emits: "In-Progress" → "Validating".
 
-# Step 4: Validation & Save
+#### Step 4: Validation & Save
 -Builds result JSON:
 -pages, is_scanned, llm_provider/model
 -tables, table_count, table_titles
 -Updates job status → "Completed" (or "Failed").
 
-# Step 5: Realtime + Polling
+#### Step 5: Realtime + Polling
 -Frontend listens for job_update via Socket.IO.
 -Also polls /status/{job_id} every 5s using React Query.
 
-# Step 6: Visualization + Export
+#### Step 6: Visualization + Export
 -Queue UI shows live jobs with status chips.
 -Actions on completion:
 -View Output: dialog with extracted tables
@@ -139,7 +139,7 @@ Notes:
 
 ```bash
 # from backend/
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn app.main:app_sio --reload
 ```
 
 ### API
