@@ -16,13 +16,23 @@ class ProcessRequest(BaseModel):
     file_id: str  # Unique identifier of the file to process
 
 
-async def _run_process(job_id: str, file_path: Path, jobs: dict):
+async def _run_process(job_id: str, file_path: Path):
     """
-    Wrapper around process_document to catch and log errors
-    so they don't crash silently.
+    Safely run process_document with jobs dict and add a validating phase.
     """
     try:
+        # Step 1: In-Progress
+        jobs[job_id]["status"] = "In-Progress"
+        # Step 2: Call your actual processing function
         await process_document(job_id, file_path, jobs)
+
+        # Step 3: Validating phase (optional step before final completion)
+        jobs[job_id]["status"] = "Validating"
+        await asyncio.sleep(0.5)  # simulate validation time, can replace with real logic
+
+        # Step 4: Mark as Completed (process_document already fills the result)
+        jobs[job_id]["status"] = "Completed"
+
     except Exception as e:
         jobs[job_id]["status"] = "Failed"
         jobs[job_id]["result"] = None
@@ -44,7 +54,7 @@ async def process_file(request: ProcessRequest):
     job_id = str(uuid.uuid4())
     jobs[job_id] = {"status": "In-Progress", "file_id": file_id, "result": None}
 
-    # ✅ Schedule async processing safely with error handling
-    asyncio.create_task(_run_process(job_id, file_path, jobs))
+    # Schedule async processing safely
+    asyncio.create_task(_run_process(job_id, file_path))
 
     return {"job_id": job_id, "status": "In-Progress"}
